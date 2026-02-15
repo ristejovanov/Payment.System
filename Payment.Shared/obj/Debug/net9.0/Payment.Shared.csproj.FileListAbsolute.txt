@@ -1,0 +1,11 @@
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\bin\Debug\net9.0\Payment.Shared.deps.json
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\bin\Debug\net9.0\Payment.Shared.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\bin\Debug\net9.0\Payment.Shared.pdb
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\Payment.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\Payment.Shared.AssemblyInfoInputs.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\Payment.Shared.AssemblyInfo.cs
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\Payment.Shared.csproj.CoreCompileInputs.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\Payment.Shared.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\refint\Payment.Shared.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\Payment.Shared.pdb
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Shared\obj\Debug\net9.0\ref\Payment.Shared.dll

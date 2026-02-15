@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11304.174
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.Shared", "Payment.Shared\Payment.Shared.csproj", "{1917D11C-A330-40E5-8DC2-709590780352}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.Tests", "Payment.Tests\Payment.Tests.csproj", "{BCA2A992-2A46-44AE-ABBB-D7187DEB3585}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.API", "Payment.API\Payment.API.csproj", "{14EA6870-2078-EE26-EF90-EB87F420AA52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.API.DataServices", "Payment.API.DataServices\Payment.API.DataServices.csproj", "{B56F6148-9F4F-09CA-7120-64D821100710}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.Protocol", "Payment.Protocol\Payment.Protocol.csproj", "{54828F3C-D927-415F-AD53-C64C902F181B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.Hubs", "Payment.Hubs\Payment.Hubs.csproj", "{1838A958-3533-40AE-B067-E3FA6583A33E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.GT", "Payment.GT\Payment.GT.csproj", "{48CB44F5-D491-4B72-9B3A-2D6888FF32FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1917D11C-A330-40E5-8DC2-709590780352}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1917D11C-A330-40E5-8DC2-709590780352}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1917D11C-A330-40E5-8DC2-709590780352}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1917D11C-A330-40E5-8DC2-709590780352}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCA2A992-2A46-44AE-ABBB-D7187DEB3585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCA2A992-2A46-44AE-ABBB-D7187DEB3585}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCA2A992-2A46-44AE-ABBB-D7187DEB3585}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCA2A992-2A46-44AE-ABBB-D7187DEB3585}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14EA6870-2078-EE26-EF90-EB87F420AA52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14EA6870-2078-EE26-EF90-EB87F420AA52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14EA6870-2078-EE26-EF90-EB87F420AA52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14EA6870-2078-EE26-EF90-EB87F420AA52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B56F6148-9F4F-09CA-7120-64D821100710}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B56F6148-9F4F-09CA-7120-64D821100710}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B56F6148-9F4F-09CA-7120-64D821100710}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B56F6148-9F4F-09CA-7120-64D821100710}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54828F3C-D927-415F-AD53-C64C902F181B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54828F3C-D927-415F-AD53-C64C902F181B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54828F3C-D927-415F-AD53-C64C902F181B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54828F3C-D927-415F-AD53-C64C902F181B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1838A958-3533-40AE-B067-E3FA6583A33E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1838A958-3533-40AE-B067-E3FA6583A33E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1838A958-3533-40AE-B067-E3FA6583A33E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1838A958-3533-40AE-B067-E3FA6583A33E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48CB44F5-D491-4B72-9B3A-2D6888FF32FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48CB44F5-D491-4B72-9B3A-2D6888FF32FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48CB44F5-D491-4B72-9B3A-2D6888FF32FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48CB44F5-D491-4B72-9B3A-2D6888FF32FE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {677ACFD4-6731-4A95-92EC-09C1030CE1AF}
+	EndGlobalSection
+EndGlobal

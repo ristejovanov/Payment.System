@@ -1,0 +1,11 @@
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\bin\Debug\net10.0\Payment.Protocol.deps.json
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\bin\Debug\net10.0\Payment.Protocol.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\bin\Debug\net10.0\Payment.Protocol.pdb
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\Payment.Protocol.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\Payment.Protocol.AssemblyInfoInputs.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\Payment.Protocol.AssemblyInfo.cs
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\Payment.Protocol.csproj.CoreCompileInputs.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\Payment.Protocol.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\refint\Payment.Protocol.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\Payment.Protocol.pdb
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Protocol\obj\Debug\net10.0\ref\Payment.Protocol.dll

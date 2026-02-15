@@ -1,0 +1,5 @@
+{
+  "DbConnection_test_failed": "An error occurred while testing db connection",
+  "Required_0": "{0} is required.",
+  "UserNameLenght": "UserName must be between 3 and 50 characters."
+}

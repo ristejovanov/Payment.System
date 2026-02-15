@@ -1,0 +1,5 @@
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.API.DataServices\obj\Debug\net10.0\Payment.API.DataServices.csproj.AssemblyReference.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.API.DataServices\obj\Debug\net10.0\Payment.API.DataServices.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.API.DataServices\obj\Debug\net10.0\Payment.API.DataServices.AssemblyInfoInputs.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.API.DataServices\obj\Debug\net10.0\Payment.API.DataServices.AssemblyInfo.cs
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.API.DataServices\obj\Debug\net10.0\Payment.API.DataServices.csproj.CoreCompileInputs.cache

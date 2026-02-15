@@ -1,0 +1,12 @@
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\bin\Debug\net10.0\Payment.Hubs.deps.json
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\bin\Debug\net10.0\Payment.Hubs.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\bin\Debug\net10.0\Payment.Hubs.pdb
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\Payment.Hubs.csproj.AssemblyReference.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\Payment.Hubs.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\Payment.Hubs.AssemblyInfoInputs.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\Payment.Hubs.AssemblyInfo.cs
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\Payment.Hubs.csproj.CoreCompileInputs.cache
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\Payment.Hubs.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\refint\Payment.Hubs.dll
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\Payment.Hubs.pdb
+C:\Users\RJovanov\OneDrive - ATS Global B.V\Desktop\PaymentSystem\Payment.Hubs\obj\Debug\net10.0\ref\Payment.Hubs.dll
