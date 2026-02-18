@@ -1,4 +1,4 @@
-﻿namespace Payment.Protocol.Base
+﻿namespace Payment.Protocol.Impl.Base
 {
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]

@@ -1,4 +1,5 @@
 using Payment.Protocol;
+using Payment.Protocol.Dtos;
 
 namespace Payment.API.DataServices.impl.Helpers
 {
@@ -10,6 +11,6 @@ namespace Payment.API.DataServices.impl.Helpers
         /// <summary>
         /// Send message to GT with retry logic
         /// </summary>
-        Task<ParsedFrame> SendAndWaitWithRetryAsync(byte msgType, IReadOnlyList<Tlv> tlvs, string correlationId, CancellationToken ct)
+        Task<Frame> SendAndWaitWithRetryAsync(RequestDto request, CancellationToken ct);
     }
 }

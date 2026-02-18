@@ -1,6 +1,8 @@
 ﻿using Payment.API.DataServices.impl.Helpers;
 using Payment.Protocol;
-using Payment.Protocol.Base;
+using Payment.Protocol.Dtos;
+using Payment.Protocol.Impl.Base;
+using Payment.Protocol.Interface;
 using Payment.Shared.Dto;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
@@ -28,37 +30,51 @@ public sealed class GtTcpClient : IGtClient
     private TaskCompletionSource<bool>? _pongTcs;
 
 
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<ParsedFrame>> _pending =
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<Frame>> _pending =
         new(StringComparer.Ordinal);
 
     private long _stan = 184000;
 
-    public GtTcpClient(string host, int port)
+    private readonly IFrameOperator _frameOperator;
+    private readonly IObjectCreator _objectCreator;
+
+
+    public GtTcpClient(string host, int port, IFrameOperator frameOperator, IObjectCreator objectCreator)
     {
         _host = host;
         _port = port;
+        _frameOperator = frameOperator;
+        _objectCreator = objectCreator;
     }
 
     public Task StartAsync(CancellationToken ct) => EnsureConnectedAsync(ct);
 
     // --- Public API used by controller ---
-    public async Task<ParsedFrame> SendAndWaitWithRetryAsync(byte msgType, IReadOnlyList<Tlv> tlvs, string correlationId, CancellationToken ct)
+    public async Task<Frame> SendAndWaitWithRetryAsync(RequestDto requestDto, CancellationToken ct)
     {
+        // Build frame once (except IsRepeat which is updated on retries)
+        var data = _objectCreator.ToBytes(requestDto);
+
         //Create ONCE
-        var tcs = new TaskCompletionSource<ParsedFrame>(TaskCreationOptions.RunContinuationsAsynchronously);
-        if (!_pending.TryAdd(correlationId, tcs))
+        var tcs = new TaskCompletionSource<Frame>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (!_pending.TryAdd(requestDto.CorrelationId, tcs))
             throw new InvalidOperationException("Duplicate correlationId in-flight.");
 
         try
         {
             for (int attempt = 0; attempt <= _opt.MaxRetries; attempt++)
             {
-                await EnsureConnectedAsync(ct);                
-                var actualTlvs = (attempt > 0)? SetIsRepeat(tlvs, "0"): SetIsRepeat(tlvs, "1");
+                await EnsureConnectedAsync(ct);
+
+                if (attempt > 0 && !requestDto.IsRepeat) 
+                {
+                    requestDto.IsRepeat = true;
+                    data = _objectCreator.ToBytes(requestDto); // rebuild frame with IsRepeat
+                } 
 
                 try
                 {
-                    await SendFrameAsync(msgType, actualTlvs, ct);
+                    await SendData(data, ct);
 
                     using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
                     timeoutCts.CancelAfter(_opt.TimeoutMs);
@@ -87,7 +103,7 @@ public sealed class GtTcpClient : IGtClient
         finally
         {
             // Remove once
-            _pending.TryRemove(correlationId, out _);
+            _pending.TryRemove(requestDto.CorrelationId, out _);
         }
     }
 
@@ -141,7 +157,7 @@ public sealed class GtTcpClient : IGtClient
 
                 try
                 {
-                    while (FrameParser.TryReadFrame(ref buffer, out var frame))
+                    while (_frameOperator.BinaryToFrame(ref buffer, out var frame))
                     {
                         if (frame!.Version != MessageTypes.Version) continue;
                         if (frame.MsgType == MessageTypes.Pong){
@@ -217,8 +233,7 @@ public sealed class GtTcpClient : IGtClient
         {
             _pongTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            // Send ping frame (no TLVs)
-            var pingFrame = FrameWriter.BuildFrame(msgType: MessageTypes.Ping, tlvs: Array.Empty<Tlv>());
+            var pingFrame = _frameOperator.FrameToBinary(new Frame { MsgType = MessageTypes.Ping, Version = MessageTypes.Version, Tlvs = Array.Empty<Tlv>() });
 
             await _sendLock.WaitAsync(ct);
             try
@@ -240,10 +255,8 @@ public sealed class GtTcpClient : IGtClient
         }
     }
 
-    private async Task SendFrameAsync(byte msgType, IReadOnlyList<Tlv> tlvs, CancellationToken ct)
+    private async Task SendData(byte[] frame, CancellationToken ct)
     {
-        var frame = FrameWriter.BuildFrame(msgType, tlvs);
-
         await _sendLock.WaitAsync(ct);
         try
         {
@@ -256,18 +269,7 @@ public sealed class GtTcpClient : IGtClient
         }
     }
 
-    private static IReadOnlyList<Tlv> SetIsRepeat(IReadOnlyList<Tlv> tlvs, string val)
-    {
-        var bytes = Encoding.ASCII.GetBytes(val);
-        var list = tlvs.ToList();
-        var idx = list.FindIndex(t => t.Tag == Tags.IsRepeat);
-        if (idx >= 0) list[idx] = new Tlv(Tags.IsRepeat, bytes);
-        else list.Add(new Tlv(Tags.IsRepeat, bytes));
-        return list;
-    }
-
-    public string NextStan() => Interlocked.Increment(ref _stan).ToString();
-
+    
     private void FailAllPending(Exception ex)
     {
         foreach (var kv in _pending)
@@ -275,11 +277,6 @@ public sealed class GtTcpClient : IGtClient
                 tcs.TrySetException(ex);
     }
 
-    private static string? GetAscii(ParsedFrame frame, byte tag)
-    {
-        var tlv = frame.Tlvs.FirstOrDefault(t => t.Tag == tag);
-        return tlv.Value.IsEmpty ? null : FrameWriter.Ascii(tlv.Value);
-    }
 
     public async ValueTask DisposeAsync()
     {

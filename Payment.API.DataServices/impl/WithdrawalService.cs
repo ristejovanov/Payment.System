@@ -6,6 +6,8 @@ using Payment.API.DataServices.interfaces.Helpers;
 using Payment.Hubs;
 using Payment.Protocol;
 using Payment.Protocol.Base;
+using Payment.Protocol.Dto;
+using Payment.Protocol.Dtos;
 using Payment.Shared.Dto;
 using Payment.Shared.Requests;
 using Payment.Shared.Responses;
@@ -38,7 +40,6 @@ namespace AtmService.Services
             // 1) Generated fields
             var correlationId = Guid.NewGuid().ToString("D");
             var stan = _stan.Next();
-            var localDateTime = DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
 
             // 2) Toy PIN block per assignment
             var pinBlock = ToyPinBlock.Compute(req.Pan, req.Pin, correlationId);
@@ -62,30 +63,25 @@ namespace AtmService.Services
                 TsUtc: DateTimeOffset.UtcNow
             ));
 
-            // 4) Build TLVs for A70
-            var tlvs = new List<Tlv>
+
+            // request 
+            var request = new A70RequestDto
             {
-                FrameWriter.Ascii(Tags.AtmId, req.AtmId),
-                FrameWriter.Ascii(Tags.Stan, stan.ToString(CultureInfo.InvariantCulture)),
-                FrameWriter.Ascii(Tags.LocalDateTime, localDateTime),
-                FrameWriter.Ascii(Tags.CorrelationId, correlationId),
-                FrameWriter.Ascii(Tags.IsRepeat, "0"),
-                FrameWriter.Ascii(Tags.Pan, req.Pan),
-                FrameWriter.Ascii(Tags.ExpiryYYMM, req.ExpiryYYMM),
-                FrameWriter.Ascii(Tags.PinBlock, pinBlock),
-                FrameWriter.Ascii(Tags.AmountMinor, req.AmountMinor.ToString(CultureInfo.InvariantCulture)),
-                FrameWriter.Ascii(Tags.Currency, req.Currency),
+                AtmId = req.AtmId,
+                CorrelationId = correlationId,
+                Stan = stan,
+                Pan = req.Pan,
+                ExpiryYYMM = req.ExpiryYYMM,
+                PinBlock = pinBlock,
+                AmountMinor = req.AmountMinor,
+                Currency = req.Currency
             };
 
             ParsedFrame a71;
             try
             {
-                // Client handles: retries + reconnects + TCS dispatch
-                a71 = await _gt.SendAndWaitWithRetryAsync(
-                    msgType: MessageTypes.A70,
-                    tlvs: tlvs,
-                    correlationId: correlationId,
-                    ct: ct);
+                // send message and wait for response 
+                a71 = await _gt.SendAndWaitWithRetryAsync(request, ct);
             }
             catch (TimeoutException)
             {
@@ -155,7 +151,6 @@ namespace AtmService.Services
         {
             // 1) Generate fields for THIS completion message
             var stan = _stan.Next();
-            var localDateTime = DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
 
             using var scope = _log.BeginScope(new Dictionary<string, object?>
             {
@@ -176,32 +171,22 @@ namespace AtmService.Services
                 TsUtc: DateTimeOffset.UtcNow
             ));
 
-            // 2) Build TLVs for A72
-            var tlvs = new List<Tlv>
-            {
-                FrameWriter.Ascii(Tags.AtmId, req.AtmId),
-                FrameWriter.Ascii(Tags.Stan, stan.ToString(CultureInfo.InvariantCulture)),
-                FrameWriter.Ascii(Tags.LocalDateTime, localDateTime),
-                FrameWriter.Ascii(Tags.CorrelationId, req.CorrelationId),
-                FrameWriter.Ascii(Tags.IsRepeat, "0"),
 
-                FrameWriter.Ascii(Tags.OriginalStan, req.OriginalStan.ToString(CultureInfo.InvariantCulture)),
-                FrameWriter.Ascii(Tags.DispenseResult, req.DispenseResult), // "OK" / "PARTIAL" / "FAILED"
-                FrameWriter.Ascii(Tags.DispensedAmountMinor, req.DispensedAmountMinor.ToString(CultureInfo.InvariantCulture)),
+            var request =  new A72RequestDto
+            {
+                AtmId = req.AtmId,
+                CorrelationId = req.CorrelationId,
+                Stan = stan,
+                OriginalStan = req.OriginalStan,
+                DispenseResult = req.DispenseResult,
+                DispenseAmountMinor = req.DispensedAmountMinor
             };
 
-            // Currency is required by your examples/spec for A72 as well
-            if (!string.IsNullOrWhiteSpace(req.Currency))
-                tlvs.Add(FrameWriter.Ascii(Tags.Currency, req.Currency));
-
+      
             ParsedFrame a73;
             try
             {
-                a73 = await _gt.SendAndWaitWithRetryAsync(
-                    msgType: MessageTypes.A72,
-                    tlvs: tlvs,
-                    correlationId: req.CorrelationId,
-                    ct: ct);
+                a73 = await _gt.SendAndWaitWithRetryAsync(request, ct);
             }
             catch (TimeoutException)
             {

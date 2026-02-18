@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Payment.GT.Classes.Interface;
 using Payment.Protocol;
-using Payment.Protocol.Base;
+using Payment.Protocol.Impl.Base;
 using Payment.Shared.Dto;
 using Payment.Shared.Enums;
 using System;
