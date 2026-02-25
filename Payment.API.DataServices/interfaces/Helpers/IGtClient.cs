@@ -6,7 +6,7 @@ namespace Payment.API.DataServices.impl.Helpers
     /// <summary>
     /// Interface for communicating with GT Gateway over TCP
     /// </summary>
-    public interface IGtClient : IAsyncDisposable
+    public interface IGtClient 
     {
         /// <summary>
         /// Send message to GT with retry logic

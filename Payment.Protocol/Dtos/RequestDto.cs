@@ -1,5 +1,4 @@
-﻿using Payment.Protocol.Base;
-using Payment.Protocol.Impl.Base;
+﻿using Payment.Protocol.Impl.Base;
 
 namespace Payment.Protocol.Dtos
 {

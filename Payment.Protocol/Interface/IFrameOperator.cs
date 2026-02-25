@@ -21,5 +21,12 @@ namespace Payment.Protocol.Interface
         /// <param name="frame">When this method returns, contains the parsed Frame if successful; otherwise, null.</param>
         /// <returns>true if a frame was successfully parsed; otherwise, false.</returns>
         bool BinaryToFrame(ref ReadOnlySequence<byte> buffer, out Frame? frame);
+
+        /// <summary>
+        /// Converts a byte span to its hexadecimal string representation.
+        /// </summary>
+        /// <param name="bytes">The byte span to convert.</param>
+        /// <returns>A string containing the hexadecimal representation of the bytes.</returns>
+        string ToHex(ReadOnlySpan<byte> bytes);
     }
 }

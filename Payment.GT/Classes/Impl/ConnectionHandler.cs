@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Payment.Protocol;
+using Payment.Protocol.Interface;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 
@@ -10,12 +11,14 @@ namespace Payment.GT.Classes.Impl
         private readonly TcpClient _client;
         private readonly GatewayProcessor _processor;
         private readonly ILogger<ConnectionHandler> _log;
+        private readonly IFrameOperator _frameOperator;
 
-        public ConnectionHandler(TcpClient client, GatewayProcessor processor, ILogger<ConnectionHandler> log)
+        public ConnectionHandler(TcpClient client, GatewayProcessor processor, IFrameOperator frameOperator, ILogger<ConnectionHandler> log)
         {
             _client = client;
             _processor = processor;
             _log = log;
+            _frameOperator = frameOperator;
         }
 
         public async Task RunAsync(CancellationToken ct)
@@ -29,42 +32,28 @@ namespace Payment.GT.Classes.Impl
                 {
                     var readResult = await reader.ReadAsync(ct);
                     var buffer = readResult.Buffer;
-
-                    while (FrameParser.TryReadFrame(ref buffer, out var payload))
+                    try
                     {
-                        ParsedFrame frame;
-                        try
+                        while (_frameOperator.BinaryToFrame(ref buffer, out var frame))
                         {
-                            frame = FrameCodec.Parse(payload);
-                        }
-                        catch (Exception ex)
-                        {
-                            _log.LogWarning(ex, "Protocol parse error; closing connection");
-                            return; // protocol violation -> close
-                        }
-
-                        byte[]? response;
-                        try
-                        {
+                            byte[]? response;
                             response = await _processor.HandleAsync(frame, ct);
-                        }
-                        catch (Exception ex)
-                        {
-                            _log.LogError(ex, "Unhandled error processing msgType=0x{MsgType:X2}; closing connection", frame.MsgType);
-                            return; // safest in a payment-like gateway: close on unexpected handler exceptions
-                        }
 
-                        if (response is null)
-                        {
-                            _log.LogWarning("Unsupported msgType=0x{MsgType:X2}; closing connection", frame.MsgType);
-                            return;
+                            if (response is null)
+                            {
+                                _log.LogWarning("Unsupported msgType=0x{MsgType:X2}; closing connection", frame.MsgType);
+                                return;
+                            }
+                            await stream.WriteAsync(response, ct);
                         }
-
-                        await stream.WriteAsync(response, ct);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogError(ex, "Unhandled error while processing message");
+                        return; 
                     }
 
                     reader.AdvanceTo(buffer.Start, buffer.End);
-
                     if (readResult.IsCompleted)
                         break;
                 }
@@ -81,7 +70,7 @@ namespace Payment.GT.Classes.Impl
             {
                 await reader.CompleteAsync();
                 try { _client.Close(); } catch { }
-            }   
+            }
         }
     }
 

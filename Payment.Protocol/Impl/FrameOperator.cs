@@ -95,14 +95,6 @@ namespace Payment.Protocol.Impl
         }
 
 
-        private Tlv Ascii(byte tag, string s) => new(tag, Encoding.ASCII.GetBytes(s));
-
-        private Tlv Digits(byte tag, long value)
-            => new(tag, Encoding.ASCII.GetBytes(value.ToString(CultureInfo.InvariantCulture)));
-
-        private Tlv Digits(byte tag, int value)
-            => new(tag, Encoding.ASCII.GetBytes(value.ToString(CultureInfo.InvariantCulture)));
-
         public string ToHex(ReadOnlySpan<byte> bytes)
         {
             var sb = new StringBuilder(bytes.Length * 3);

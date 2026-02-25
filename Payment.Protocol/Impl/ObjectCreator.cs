@@ -37,5 +37,24 @@ namespace Payment.Protocol.Impl
 
             return frame;
         }
+
+        public object ToObject(Frame frame)
+        {
+            
+
+
+
+            if ( is not MessageBase typed)
+                throw new InvalidOperationException(
+                    $"Object of type {obj.GetType().Name} must implement IHasMsgType to be encoded.");
+
+            var tlvs = _mapper.ToTlvs(obj, skipEmptyStrings, skipDefaultNumbers);
+            var frame = _frameOperator.FrameToBinary(new Frame { MsgType = typed.MsgType, Version = typed.Version, Tlvs = tlvs });
+
+            _logger.LogDebug("Encoded {Type} to frame bytes. msgType=0x{MsgType:X2}, tlvs={Count}, len={Len}",
+                obj.GetType().Name, typed.MsgType, tlvs.Count, frame.Length);
+
+            return frame;
+        }
     }
 }

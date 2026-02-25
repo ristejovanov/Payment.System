@@ -1,5 +1,4 @@
-﻿using Payment.Protocol.Base;
-using Payment.Protocol.Dtos;
+﻿using Payment.Protocol.Dtos;
 using Payment.Protocol.Impl.Base;
 
 namespace Payment.Protocol.Dto
@@ -7,6 +6,8 @@ namespace Payment.Protocol.Dto
     public sealed class A70RequestDto : RequestDto
     {
         public override byte MsgType => MessageTypes.A70;
+
+        public override byte Version => MessageTypes.Version;
 
         [TlvTag(Tags.Pan)]
         public string? Pan { get; set; }

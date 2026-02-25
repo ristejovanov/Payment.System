@@ -1,4 +1,5 @@
-﻿using Payment.Protocol.Impl.Base;
+﻿using Microsoft.Extensions.Logging;
+using Payment.Protocol.Impl.Base;
 using Payment.Protocol.Interface;
 using System.Collections.Concurrent;
 using System.Globalization;
@@ -10,10 +11,17 @@ namespace Payment.Protocol.Impl
 {
     public class TlvMapper : ITlvMapper
     {
+        private readonly ILogger<TlvMapper> _logger;
         private const int MaxTlvValueLength = 255;
 
         private sealed record MapItem(byte Tag, PropertyInfo Prop, Type Type);
         private static readonly ConcurrentDictionary<Type, MapItem[]> _cache = new();
+
+        public TlvMapper(ILogger<TlvMapper> logger)
+        {
+            _logger = logger;
+        }
+
         // DTO -> TLVs
         public IReadOnlyList<Tlv> ToTlvs(object obj, bool skipEmptyStrings, bool skipDefaultNumbers)
         {
@@ -32,7 +40,7 @@ namespace Payment.Protocol.Impl
                 {
                     if (skipEmptyStrings && string.IsNullOrWhiteSpace(s)) continue;
                     ValidateStringLength(s, m.Tag, type.Name, m.Prop.Name);
-                    tlvs.Add(FrameOperator.Ascii(m.Tag, s));
+                    tlvs.Add(Tlv.Ascii(m.Tag, s));
                     continue;
                 }
 
@@ -42,7 +50,7 @@ namespace Payment.Protocol.Impl
                     if (g == Guid.Empty) continue;
                     var guidStr = g.ToString("D");
                     ValidateStringLength(guidStr, m.Tag, type.Name, m.Prop.Name);
-                    tlvs.Add(FrameOperator.Ascii(m.Tag, guidStr));
+                    tlvs.Add(Tlv.Ascii(m.Tag, guidStr));
                     continue;
                 }
 
@@ -52,7 +60,7 @@ namespace Payment.Protocol.Impl
                     var name = value.ToString();
                     if (skipEmptyStrings && string.IsNullOrWhiteSpace(name)) continue;
                     ValidateStringLength(name!, m.Tag, type.Name, m.Prop.Name);
-                    tlvs.Add(FrameOperator.Ascii(m.Tag, name!));
+                    tlvs.Add(Tlv.Ascii(m.Tag, name!));
                     continue;
                 }
 
@@ -60,14 +68,14 @@ namespace Payment.Protocol.Impl
                 if (value is int i)
                 {
                     if (skipDefaultNumbers && i == 0) continue;
-                    tlvs.Add(FrameOperator.Digits(m.Tag, i));
+                    tlvs.Add(Tlv.Digits(m.Tag, i));
                     continue;
                 }
 
                 if (value is long l)
                 {
                     if (skipDefaultNumbers && l == 0L) continue;
-                    tlvs.Add(FrameOperator.Digits(m.Tag, l));
+                    tlvs.Add(Tlv.Digits(m.Tag, l));
                     continue;
                 }
 
@@ -76,7 +84,7 @@ namespace Payment.Protocol.Impl
                 {
                     var date = dt.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
                     if (skipEmptyStrings && string.IsNullOrWhiteSpace(date)) continue;
-                    tlvs.Add(FrameOperator.Ascii(m.Tag, date!));
+                    tlvs.Add(Tlv.Ascii(m.Tag, date!));
                     continue;
                 }
 
@@ -85,13 +93,13 @@ namespace Payment.Protocol.Impl
                 {
                     var date = dto.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
                     if (skipEmptyStrings && string.IsNullOrWhiteSpace(date)) continue;
-                    tlvs.Add(FrameOperator.Ascii(m.Tag, date!));
+                    tlvs.Add(Tlv.Ascii(m.Tag, date!));
                     continue;
                 }
 
                 if (value is bool b)
                 {
-                    tlvs.Add(FrameOperator.Ascii(m.Tag, b ? "1" : "0"));
+                    tlvs.Add(Tlv.Ascii(m.Tag, b ? "1" : "0"));
                     continue;
                 }
 
@@ -127,15 +135,24 @@ namespace Payment.Protocol.Impl
 
             foreach (var m in map)
             {
-                if (!m.Prop.CanWrite) continue;
-                if (!dict.TryGetValue(m.Tag, out var raw)) continue;
+                try
+                {
+                    if (!m.Prop.CanWrite) continue;
+                    if (!dict.TryGetValue(m.Tag, out var raw)) continue;
 
-                object? converted = ConvertRaw(raw, m.Type);
-                if (converted is null) continue;
+                    object? converted = ConvertRaw(raw, m.Type);
+                    if (converted is null) continue;
 
-                m.Prop.SetValue(obj, converted);
+                    m.Prop.SetValue(obj, converted);
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to deserialize property {PropertyName} for type {TypeName} (tag {Tag})", m.Prop.Name, type.Name, $"0x{m.Tag:X2}");
+                }
             }
 
+            //validate the required Properties
+            ValidateRequiredProperties(obj, map);
             return obj;
         }
 
@@ -201,6 +218,31 @@ namespace Payment.Protocol.Impl
 
             throw new NotSupportedException($"Cannot convert TLV value to {targetType}");
         }
+
+
+        private static void ValidateRequiredProperties(object obj, MapItem[] map)
+        {
+            var type = obj.GetType();
+
+            foreach (var m in map)
+            {
+                var prop = m.Prop;
+
+                bool isRequired =
+                    prop.GetCustomAttribute<System.Runtime.CompilerServices.RequiredMemberAttribute>() != null ||
+                    prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.RequiredAttribute>() != null;
+
+                if (!isRequired) continue;
+
+                var value = prop.GetValue(obj);
+
+                if (value == null || (value is string s && string.IsNullOrWhiteSpace(s)))
+                {
+                    throw new Exception($"Missing required field '{prop.Name}' for type {type.Name} (tag 0x{m.Tag:X2})");
+                }
+            }
+        }
+
 
         private static void ValidateStringLength(string s, byte tag, string typeName, string propName)
         {
