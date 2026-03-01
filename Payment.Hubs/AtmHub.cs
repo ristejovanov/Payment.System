@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Text.RegularExpressions;
 
 namespace Payment.Hubs
 {

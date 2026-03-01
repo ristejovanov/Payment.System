@@ -27,7 +27,7 @@ namespace Payment.GT.Classes
 
         // Single-flight per (atmId, stan) to avoid multiple issuer calls while in-flight
         private readonly ConcurrentDictionary<string, Lazy<Task<byte[]>>> _inflightA70 = new(StringComparer.Ordinal);
-
+        private readonly ConcurrentDictionary<(string AtmId, long CompletionStan), Lazy<Task<byte[]>>> _inflightA72 = new();
 
         public GatewayProcessor(IGatewayStateStore store
             , IIssuerClient issuer
@@ -71,6 +71,14 @@ namespace Payment.GT.Classes
                 return BuildErrorResponse(req, "96", "Bad TLV mapping");
             }
 
+            using var scope = _log.BeginScope(new Dictionary<string, object?>
+            {
+                ["atmId"] = requestDto.AtmId,
+                ["stan"] = requestDto.Stan,
+                ["correlationId"] = requestDto.CorrelationId,
+                ["isRepeat"] = requestDto.IsRepeat
+            });
+
             // Prepare response DTO with fields available at this point ---------------------
             var responseDto = new A71ResponseDto
             {
@@ -92,16 +100,7 @@ namespace Payment.GT.Classes
 
             // Compute fingerprint for idempotency and collision detection (same stan but different payload)
             var fingerprint = RequestFingerprint.ForA70(requestDto.Pan!, requestDto.ExpiryYYMM!, requestDto.PinBlock!, requestDto.AmountMinor, requestDto.Currency!);
-
-            using var scope = _log.BeginScope(new Dictionary<string, object?>
-            {
-                ["atmId"] = requestDto.AtmId,
-                ["stan"] = requestDto.Stan,
-                ["correlationId"] = requestDto.CorrelationId,
-                ["isRepeat"] = requestDto.IsRepeat
-            });
-
-
+     
             // Atomic begin at the store layer (first writer wins)
             var begin = _store.BeginReservation(requestDto, fingerprint);
 
@@ -223,6 +222,16 @@ namespace Payment.GT.Classes
                 return Task.FromResult(BuildErrorResponse(req, "96", "Bad TLV mapping"));
             }
 
+            using var scope = _log.BeginScope(new Dictionary<string, object?>
+            {
+                ["msgType"] = "A72",
+                ["atmId"] = requestDto.AtmId,
+                ["completionStan"] = requestDto.Stan,
+                ["originalStan"] = requestDto.OriginalStan,
+                ["correlationId"] = requestDto.CorrelationId,
+                ["isRepeat"] = requestDto.IsRepeat
+            });
+
             // Prepare response DTO with fields available at this point ---------------------
             var responseDto = new A73ResponseDto
             {
@@ -238,18 +247,14 @@ namespace Payment.GT.Classes
 
                 responseDto.Rc = "96";
                 responseDto.Message = "Validation failed:" + validation.ToString();
-                _objectCreator.ToBytes(responseDto); 
+                var bad = _objectCreator.ToBytes(responseDto);
+                // Optional: cache invalid response for this completionStan to be idempotent
+                _store.StoreCompletionResponse(requestDto.AtmId!, requestDto.Stan, bad);
+                return Task.FromResult(bad);
             }
 
-            using var scope = _log.BeginScope(new Dictionary<string, object?>
-            {
-                ["msgType"] = "A72",
-                ["atmId"] = requestDto.AtmId,
-                ["completionStan"] = requestDto.Stan,
-                ["originalStan"] = requestDto.OriginalStan,
-                ["correlationId"] = requestDto.CorrelationId,
-                ["isRepeat"] = requestDto.IsRepeat
-            });
+
+            var key = (requestDto.AtmId!, requestDto.Stan);
 
             // A72 idempotency: key by (atmId, originalStan)
             if (_store.TryGetCompletionResponse(requestDto.AtmId!, requestDto.Stan, out var cachedA73))
@@ -258,41 +263,74 @@ namespace Payment.GT.Classes
                 return Task.FromResult(cachedA73);
             }
 
-            if (!_store.TryGetReservationByStan(requestDto.AtmId!, requestDto.OriginalStan, out var res))
-            { 
-                responseDto.Rc = "25";
-                responseDto.Message = "Reservation not found";
-                var notFound = _objectCreator.ToBytes(responseDto);
-                _store.StoreCompletionResponse(requestDto.AtmId!, requestDto.OriginalStan, notFound);
+
+            var lazy = _inflightA72.GetOrAdd(key,_ => new Lazy<Task<byte[]>>(() => CompleteA72CoreAsync(requestDto, ct),
+                LazyThreadSafetyMode.ExecutionAndPublication));
+
+            return FinishA72Async(key, lazy);
+        }
+        private async Task<byte[]> FinishA72Async((string AtmId, long CompletionStan) k, Lazy<Task<byte[]>> lz)
+        {
+            try
+            {
+                var bytes = await lz.Value.ConfigureAwait(false);
+                return bytes;
+            }
+            finally
+            {
+                // Remove only if the same lazy instance is still stored
+                _inflightA72.TryRemove(new KeyValuePair<(string, long), Lazy<Task<byte[]>>>(k, lz));
+            }
+        }
+
+        private Task<byte[]> CompleteA72CoreAsync(A72RequestDto dto, CancellationToken ct)
+        {
+            var resp = new A73ResponseDto
+            {
+                CorrelationId = dto.CorrelationId!,
+                CompletionStatus = CompletionStatus.Failed
+            };
+
+            // Check reservation by originalStan (business rule)
+            if (!_store.TryGetReservationByStan(dto.AtmId!, dto.OriginalStan, out var res))
+            {
+                resp.Rc = "25";
+                resp.Message = "Reservation not found";
+                var notFound = _objectCreator.ToBytes(resp);
+                _store.StoreCompletionResponse(dto.AtmId!, dto.Stan, notFound);
                 return Task.FromResult(notFound);
             }
 
-            if(res.Status == ReservationStatus.Processing)
+            if (res.Status == ReservationStatus.Processing)
             {
-                responseDto.Rc = "91";
-                responseDto.Message = "Issuer decision pending, cannot complete";
-                var pending = _objectCreator.ToBytes(responseDto);
+                resp.Rc = "91";
+                resp.Message = "Issuer decision pending, cannot complete";
+                var pending = _objectCreator.ToBytes(resp);
+
+                // Cache pending too (often short TTL)
+                _store.StoreCompletionResponse(dto.AtmId!, dto.Stan, pending);
                 return Task.FromResult(pending);
             }
 
             if (res.Status != ReservationStatus.Approved)
             {
-                responseDto.Rc = "91";
-                responseDto.Message = "Reservation not approved";
-                var notApproved = _objectCreator.ToBytes(responseDto);
-                _store.StoreCompletionResponse(requestDto.AtmId!, requestDto.OriginalStan, notApproved);
+                resp.Rc = "91";
+                resp.Message = "Reservation not approved";
+                var notApproved = _objectCreator.ToBytes(resp);
+                _store.StoreCompletionResponse(dto.AtmId!, dto.Stan, notApproved);
                 return Task.FromResult(notApproved);
             }
 
-            responseDto.Rc = "00";
-            responseDto.CompletionStatus = CompletionStatus.Completed;
-            responseDto.Message = "COMPLETED";
+            // Success (or partial logic if you later add it)
+            resp.Rc = "00";
+            resp.CompletionStatus = CompletionStatus.Completed;
+            resp.Message = "COMPLETED";
 
-            var ok = _objectCreator.ToBytes(responseDto);
-            _store.StoreCompletionResponse(requestDto.AtmId!, requestDto.OriginalStan, ok);
+            var ok = _objectCreator.ToBytes(resp);
+            _store.StoreCompletionResponse(dto.AtmId!, dto.Stan, ok);
             return Task.FromResult(ok);
         }
-  
+
         private byte[] BuildErrorResponse(Frame req, string rc, string msg)
         {
             // respond with same correlation/atmId/stan if available; fall back if missing

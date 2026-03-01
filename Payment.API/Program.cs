@@ -1,8 +1,8 @@
-﻿using Serilog;
-using Microsoft.Extensions.Hosting.WindowsServices;
+﻿using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.OpenApi.Models;
+using Payment.API.Middleware;
 using Security.DataServices.DependencyConfiguration;
-using Security.DataServices.AutoMapping;
+using Serilog;
 using System.Reflection;
 
 
@@ -43,7 +43,6 @@ builder.Services.AddCors(options =>
 
 // --- Dependency registration via extensions ---
 builder.Services.InstallDependency();
-builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddMemoryCache();
 
 // --- Controllers & JSON ---
@@ -57,26 +56,7 @@ builder.Services.AddControllers()
 // --- Swagger ---
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Security API", Version = "v1" });
-    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
-    {
-        Description = "API key authentication using X-API-KEY header",
-        In = ParameterLocation.Header,
-        Name = "X-API-KEY",
-        Type = SecuritySchemeType.ApiKey
-    });
-
-    var scheme = new OpenApiSecurityScheme
-    {
-        Reference = new OpenApiReference
-        {
-            Type = ReferenceType.SecurityScheme,
-            Id = "ApiKey"
-        },
-        In = ParameterLocation.Header,
-    };
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    { {scheme, new List<string>()}});
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Payment API", Version = "v1" });
 });
 
 #endregion
@@ -91,7 +71,7 @@ var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "
 
 Log.Information(
     "================================================================================\n" +
-    "🚀 SECURITY API SERVICE STARTED\n" +
+    "Payment API service started\n" +
     "Timestamp : {Timestamp}\n" +
     "Host       : {Host}\n" +
     "Environment: {Environment}\n" +
@@ -106,7 +86,7 @@ Log.Information(
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Security API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment API v1");
 });
 
 
@@ -122,11 +102,8 @@ app.UseCors(AllowedCrossOrigins);
 
 
 // --- Middlewares in professional order ---
-app.UseMiddleware<CorrelationIdMiddleware>();
 app.Use(async (ctx, next) => { ctx.Request.EnableBuffering(); await next(); });
-app.UseMiddleware<RequestLoggingMiddleware>();
-app.UseMiddleware<ApiKeyMiddleware>();
-app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // --- Routing ---
 app.MapControllers();

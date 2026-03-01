@@ -1,6 +1,6 @@
-using Payment.API.DataServices.interfaces.Helpers;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Payment.Shared.Dto;
 
 namespace Payment.Hubs
 {
