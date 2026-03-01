@@ -6,7 +6,6 @@ using Payment.Protocol.Dtos;
 using Payment.Protocol.Interface;
 using Payment.Shared.Dto;
 using System.Collections.Concurrent;
-using System.Data;
 using System.Net.Sockets;
 
 public sealed class GtClient : IGtClient
@@ -45,13 +44,20 @@ public sealed class GtClient : IGtClient
         if (!_pending.TryAdd(req.CorrelationId, tcs))
             throw new InvalidOperationException("Duplicate correlationId in-flight.");
 
+        var bytes = _objectCreator.ToBytes(req);
+
         try
         {
             for (int attempt = 0; attempt <= _opt.MaxRetries; attempt++)
             {
-                req.IsRepeat = attempt > 0;
+                // For retries, we set IsRepeat = true and resend the same request. GT should handle this idempotently.
+                if (attempt > 0)
+                {
+                    req.IsRepeat = true;
+                    bytes = _objectCreator.ToBytes(req);
+                }
 
-                var bytes = _objectCreator.ToBytes(req);
+                // Ensure connection before each attempt, in case it was lost. This is important for retries.
                 await _conn.EnsureConnectedAsync(ct);
 
                 try
@@ -61,13 +67,11 @@ public sealed class GtClient : IGtClient
                     using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
                     timeoutCts.CancelAfter(_opt.TimeoutMs);
 
+                    // Wait for the response or timeout. If timeout occurs, we catch it and retry if attempts remain.
                     return await tcs.Task.WaitAsync(timeoutCts.Token);
                 }
                 catch (OperationCanceledException) when (!ct.IsCancellationRequested)
                 {
-                    if (attempt >= _opt.MaxRetries)
-                        throw new TimeoutException("GT did not respond after retries.");
-
                     continue;
                 }
                 catch (Exception ex) when (IsConnectionException(ex) && attempt < _opt.MaxRetries)
@@ -86,6 +90,7 @@ public sealed class GtClient : IGtClient
         }
     }
 
+    // this can be done much better with proper exception types from the connection layer, but for demo purposes we'll just catch common ones here
     private static bool IsConnectionException(Exception ex)
         => ex is IOException or SocketException or ObjectDisposedException;
 }

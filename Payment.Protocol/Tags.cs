@@ -24,12 +24,13 @@ namespace Payment.Protocol
         public const byte DispenseResult = 0x30;
         public const byte DispensedAmountMinor = 0x31;
         public const byte OriginalStan = 0x32;
+        public const byte CompletionStatus = 0x33;
 
         // Response
         public const byte Rc = 0x40; // ASCII "00"/"05"/"51"/"91"...
         public const byte AuthCode = 0x41; // ASCII 6
         public const byte Message = 0x42; // ASCII text
-
+         
         // Bonus
         public const byte IccData = 0x60; // binary blob (optional)
     }

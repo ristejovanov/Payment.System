@@ -135,24 +135,16 @@ namespace Payment.Protocol.Impl
 
             foreach (var m in map)
             {
-                try
-                {
-                    if (!m.Prop.CanWrite) continue;
-                    if (!dict.TryGetValue(m.Tag, out var raw)) continue;
+                if (!m.Prop.CanWrite) continue;
+                if (!dict.TryGetValue(m.Tag, out var raw)) continue;
 
-                    object? converted = ConvertRaw(raw, m.Type);
-                    if (converted is null) continue;
+                object? converted = ConvertRaw(raw, m.Type);
+                if (converted is null) continue;
 
-                    m.Prop.SetValue(obj, converted);
-                }
-                catch(Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to deserialize property {PropertyName} for type {TypeName} (tag {Tag})", m.Prop.Name, type.Name, $"0x{m.Tag:X2}");
-                }
+                m.Prop.SetValue(obj, converted);
             }
 
             //validate the required Properties
-            ValidateRequiredProperties(obj, map);
             return obj;
         }
 
@@ -217,30 +209,6 @@ namespace Payment.Protocol.Impl
                 return Enum.TryParse(underlying, s, ignoreCase: true, out var e) ? e : null;
 
             throw new NotSupportedException($"Cannot convert TLV value to {targetType}");
-        }
-
-
-        private static void ValidateRequiredProperties(object obj, MapItem[] map)
-        {
-            var type = obj.GetType();
-
-            foreach (var m in map)
-            {
-                var prop = m.Prop;
-
-                bool isRequired =
-                    prop.GetCustomAttribute<System.Runtime.CompilerServices.RequiredMemberAttribute>() != null ||
-                    prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.RequiredAttribute>() != null;
-
-                if (!isRequired) continue;
-
-                var value = prop.GetValue(obj);
-
-                if (value == null || (value is string s && string.IsNullOrWhiteSpace(s)))
-                {
-                    throw new Exception($"Missing required field '{prop.Name}' for type {type.Name} (tag 0x{m.Tag:X2})");
-                }
-            }
         }
 
 

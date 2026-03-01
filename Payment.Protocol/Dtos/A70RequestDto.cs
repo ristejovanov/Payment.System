@@ -7,8 +7,6 @@ namespace Payment.Protocol.Dto
     {
         public override byte MsgType => MessageTypes.A70;
 
-        public override byte Version => MessageTypes.Version;
-
         [TlvTag(Tags.Pan)]
         public string? Pan { get; set; }
 

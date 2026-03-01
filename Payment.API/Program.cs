@@ -1,10 +1,6 @@
 ﻿using Serilog;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.OpenApi.Models;
-using Security.API.Middleware;
-using Security.API.Middleware.Web.Middleware;
-using Security.Data.EF.Infrastructure;
 using Security.DataServices.DependencyConfiguration;
 using Security.DataServices.AutoMapping;
 using System.Reflection;
@@ -44,12 +40,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-// --- EF Core setup ---
-builder.Services.AddDbContext<AppDbContext>(opt =>
-{
-    var cs = configuration.GetConnectionString("DefaultConnection");
-    opt.UseSqlServer(cs, x => x.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name));
-});
 
 // --- Dependency registration via extensions ---
 builder.Services.InstallDependency();

@@ -7,6 +7,6 @@ namespace Payment.Protocol.Impl.Base
     public abstract class MessageBase
     {
         public abstract byte MsgType { get; }
-        public abstract byte Version { get; }     
+        public virtual byte Version { get; } = MessageTypes.Version;
     }
 }
