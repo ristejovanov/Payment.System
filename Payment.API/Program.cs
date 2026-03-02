@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.OpenApi.Models;
 using Payment.API.Middleware;
-using Security.DataServices.DependencyConfiguration;
+using Payment.API.DataServices.DependencyConfiguration;
 using Serilog;
 using System.Reflection;
+using Payment.Hubs;
 
 
 const string AllowedCrossOrigins = "_allowedCrossOrigins";
@@ -40,9 +41,8 @@ builder.Services.AddCors(options =>
         });
 });
 
-
 // --- Dependency registration via extensions ---
-builder.Services.InstallDependency();
+builder.Services.InstallDependency(configuration);
 builder.Services.AddMemoryCache();
 
 // --- Controllers & JSON ---
@@ -107,6 +107,9 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // --- Routing ---
 app.MapControllers();
+
+// Map SignalR hub
+app.MapHub<AtmHub>("/hubs/atm");
 
 #endregion
 
