@@ -2,6 +2,7 @@
 using Payment.API.DataServices.interfaces.Helpers;
 using Payment.Protocol;
 using Payment.Protocol.Interface;
+using Payment.Shared.Dto;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 
@@ -9,8 +10,7 @@ namespace Payment.API.DataServices.impl.Helpers
 {
     public sealed class GtConnection : IGtConnection
     {
-        private readonly string _host;
-        private readonly int _port;
+        private readonly GtClientOptions _opt;
         private readonly IFrameOperator _frameOperator;
         private readonly ILogger<GtConnection> _log;
 
@@ -30,10 +30,9 @@ namespace Payment.API.DataServices.impl.Helpers
 
         public event Action<Frame>? FrameReceived;
 
-        public GtConnection(string host, int port, IFrameOperator frameOperator, ILogger<GtConnection> log)
+        public GtConnection(GtClientOptions opt, IFrameOperator frameOperator, ILogger<GtConnection> log)
         {
-            _host = host;
-            _port = port;
+            _opt = opt;
             _frameOperator = frameOperator;
             _log = log;
         }
@@ -51,14 +50,14 @@ namespace Payment.API.DataServices.impl.Helpers
             SafeDisposeConnection();
 
             _tcp = new TcpClient();
-            await _tcp.ConnectAsync(_host, _port, ct);
+            await _tcp.ConnectAsync(_opt.Host, _opt.Port, ct);
             _stream = _tcp.GetStream();
             _reader = PipeReader.Create(_stream);
 
             _readTask = Task.Run(ReadLoopAsync, _cts.Token);
             _heartbeatTask ??= Task.Run(HeartbeatLoopAsync, _cts.Token);
 
-            _log.LogInformation("GT connected to {Host}:{Port}", _host, _port);
+            _log.LogInformation("GT connected to {Host}:{Port}", _opt.Host, _opt.Port);
         }
 
         public async Task SendAsync(byte[] frameBytes, CancellationToken ct)
@@ -130,10 +129,10 @@ namespace Payment.API.DataServices.impl.Helpers
             {
                 try
                 {
-                    await Task.Delay(interval, _cts.Token);
+                    await Task.Delay(_opt.HeartbeatSeconds, _cts.Token);
                     await EnsureConnectedAsync(_cts.Token);
 
-                    using var timeoutCts = new CancellationTokenSource(timeout);
+                    using var timeoutCts = new CancellationTokenSource(_opt.TimeoutMs);
                     using var linked = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, timeoutCts.Token);
 
                     await SendPingAndWaitPongAsync(linked.Token);

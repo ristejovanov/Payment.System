@@ -25,7 +25,6 @@ namespace AtmService.Services
         public WithdrawalsService(
             IGtClient gt,
             IStenGenerator stan,
-            IHubContext<AtmHub> hub,
             ILogger<WithdrawalsService> log, 
             ITlvMapper mapper,
             IEventPublisher eventPublisher)

@@ -333,11 +333,8 @@ namespace Payment.GT.Classes
         private byte[] BuildErrorResponse(Frame req, string rc, string msg)
         {
             // respond with same correlation/atmId/stan if available; fall back if missing
-            var atmId = req.GetAsciiOrNull(Tags.AtmId) ?? "";
-            var stanStr = req.GetAsciiOrNull(Tags.Stan) ?? "";
             var corr = req.GetAsciiOrNull(Tags.CorrelationId) ?? "";
-            long.TryParse(stanStr, NumberStyles.None, CultureInfo.InvariantCulture, out var stan);
-
+    
             if(req.MsgType == 0x70)
                 return _objectCreator.ToBytes(new A71ResponseDto { CorrelationId = corr, Rc = rc, Message = msg });
 

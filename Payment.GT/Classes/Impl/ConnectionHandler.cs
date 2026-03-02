@@ -7,7 +7,7 @@ using System.Net.Sockets;
 
 namespace Payment.GT.Classes.Impl
 {
-    public sealed class ConnectionHandler : IConnectionHandler
+    public sealed class ConnectionHandler 
     {
         private readonly TcpClient _client;
         private readonly IGatewayProcessor _processor;

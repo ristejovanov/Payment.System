@@ -2,7 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Payment.GT.Classes.Impl;
 using Payment.GT.Classes.Interface;
+using Payment.Protocol.Interface;
 using System.Net.Sockets;
 
 namespace Payment.GT.Classes
@@ -45,9 +47,12 @@ namespace Payment.GT.Classes
                 {
                     using var scope = _sp.CreateScope();
                     var processor = scope.ServiceProvider.GetRequiredService<IGatewayProcessor>();
-                    var connectionHandler = scope.ServiceProvider.GetRequiredService<IConnectionHandler>();
+                    var frameOperator = scope.ServiceProvider.GetRequiredService<IFrameOperator>();
+                    var log = scope.ServiceProvider.GetRequiredService<ILogger<ConnectionHandler>>();
 
-                    await connectionHandler.RunAsync(stoppingToken);
+
+                    var handler = new ConnectionHandler(client, processor, frameOperator, log);
+                    await handler.RunAsync(stoppingToken);
                 }, stoppingToken);
             }
         }

@@ -24,7 +24,6 @@ var builder = Host.CreateDefaultBuilder(args)
         // Gateway core services (all Singleton - correct!)
         services.AddSingleton<IGatewayProcessor, GatewayProcessor>();
         services.AddSingleton<IGatewayStateStore, GatewayStateStore>();
-        services.AddSingleton<IConnectionHandler, ConnectionHandler>();
         services.AddSingleton<IIssuerClient, MockIssuerClient>();
         
         // Protocol services (Singleton - stateless)
