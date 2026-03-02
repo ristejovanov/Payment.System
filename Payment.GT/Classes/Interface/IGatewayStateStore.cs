@@ -1,8 +1,6 @@
-﻿using Payment.Protocol.Dto;
+﻿using Payment.Protocol.Dtos;
 using Payment.Shared.Dto;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace Payment.GT.Classes.Interface
 {

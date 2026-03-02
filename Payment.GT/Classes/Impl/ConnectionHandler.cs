@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Payment.GT.Classes.Interface;
 using Payment.Protocol;
 using Payment.Protocol.Interface;
 using System.IO.Pipelines;
@@ -6,14 +7,14 @@ using System.Net.Sockets;
 
 namespace Payment.GT.Classes.Impl
 {
-    public sealed class ConnectionHandler
+    public sealed class ConnectionHandler : IConnectionHandler
     {
         private readonly TcpClient _client;
-        private readonly GatewayProcessor _processor;
+        private readonly IGatewayProcessor _processor;
         private readonly ILogger<ConnectionHandler> _log;
         private readonly IFrameOperator _frameOperator;
 
-        public ConnectionHandler(TcpClient client, GatewayProcessor processor, IFrameOperator frameOperator, ILogger<ConnectionHandler> log)
+        public ConnectionHandler(TcpClient client, IGatewayProcessor processor, IFrameOperator frameOperator, ILogger<ConnectionHandler> log)
         {
             _client = client;
             _processor = processor;
@@ -73,5 +74,4 @@ namespace Payment.GT.Classes.Impl
             }
         }
     }
-
 }

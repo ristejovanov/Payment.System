@@ -1,8 +1,5 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Payment.GT.Interfaces
+namespace Payment.GT.Classes.Interface
 {
     /// <summary>
     /// Defines a contract for handling connection operations asynchronously.

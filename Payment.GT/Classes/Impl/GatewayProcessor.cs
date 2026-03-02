@@ -12,7 +12,7 @@ using System.Globalization;
 
 namespace Payment.GT.Classes
 {
-    public sealed class GatewayProcessor
+    public sealed class GatewayProcessor : IGatewayProcessor
     {
         private static readonly TimeSpan IssuerTimeout = TimeSpan.FromSeconds(2);
 

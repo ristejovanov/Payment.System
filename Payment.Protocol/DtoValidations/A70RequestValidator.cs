@@ -1,4 +1,4 @@
-﻿using Payment.Protocol.Dto;
+﻿using Payment.Protocol.Dtos;
 using Payment.Protocol.Impl;
 using Payment.Protocol.Interface;
 

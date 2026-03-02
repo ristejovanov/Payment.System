@@ -1,7 +1,7 @@
 ﻿using Payment.Protocol.Dtos;
 using Payment.Protocol.Impl.Base;
 
-namespace Payment.Protocol.Dto
+namespace Payment.Protocol.Dtos
 {
     public sealed class A70RequestDto : RequestDto
     {
