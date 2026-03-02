@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Payment.GT.Classes.Interface;
-using Payment.Protocol.Dto;
+using Payment.Protocol.Dtos;
 using Payment.Shared.Dto;
 using Payment.Shared.Enums;
 using System.Collections.Concurrent;

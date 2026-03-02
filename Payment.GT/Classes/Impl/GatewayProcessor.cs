@@ -2,7 +2,6 @@
 using Payment.GT.Classes.Impl;
 using Payment.GT.Classes.Interface;
 using Payment.Protocol;
-using Payment.Protocol.Dto;
 using Payment.Protocol.Dtos;
 using Payment.Protocol.Interface;
 using Payment.Shared.Dto;

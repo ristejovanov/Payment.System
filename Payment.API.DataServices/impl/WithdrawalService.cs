@@ -5,7 +5,6 @@ using Payment.API.DataServices.impl.Helpers;
 using Payment.API.DataServices.interfaces.Helpers;
 using Payment.Hubs;
 using Payment.Protocol;
-using Payment.Protocol.Dto;
 using Payment.Protocol.Dtos;
 using Payment.Protocol.Interface;
 using Payment.Shared.Dto;

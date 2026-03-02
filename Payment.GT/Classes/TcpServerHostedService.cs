@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Payment.GT.Classes.Interface;
-using Payment.GT.Interfaces;
 using System.Net.Sockets;
 
 namespace Payment.GT.Classes
