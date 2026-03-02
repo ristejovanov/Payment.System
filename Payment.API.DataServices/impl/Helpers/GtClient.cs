@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Payment.API.DataServices.impl.Helpers;
 using Payment.API.DataServices.interfaces.Helpers;
 using Payment.Protocol;
@@ -21,11 +22,11 @@ namespace Payment.API.DataServices.impl.Helpers
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Frame>> _pending =
             new(StringComparer.Ordinal);
 
-        public GtClient(IGtConnection conn, IObjectCreator objectCreator, GtClientOptions opt, ILogger<GtClient> log)
+        public GtClient(IGtConnection conn, IObjectCreator objectCreator, IOptions<GtClientOptions> opt, ILogger<GtClient> log)
         {
             _conn = conn;
             _objectCreator = objectCreator;
-            _opt = opt;
+            _opt = opt.Value;
             _log = log;
 
             _conn.FrameReceived += OnFrame;

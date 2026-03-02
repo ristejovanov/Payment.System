@@ -32,6 +32,7 @@ namespace Payment.GT.Classes
             , IIssuerClient issuer
             , IObjectCreator objectCreator
             , IFrameOperator frameOperator
+            , ITlvMapper mapper
             , ILogger<GatewayProcessor> log
             , IMessageValidator<A70RequestDto> a70Validator
             , IMessageValidator<A72RequestDto> a72Validator)
@@ -41,6 +42,7 @@ namespace Payment.GT.Classes
             _log = log;
             _objectCreator = objectCreator;
             _frameOperator = frameOperator;
+            _mapper = mapper;
             _a70Validator = a70Validator;
             _a72Validator = a72Validator;
         }

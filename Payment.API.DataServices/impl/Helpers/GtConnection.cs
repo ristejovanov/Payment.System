@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Payment.API.DataServices.interfaces.Helpers;
 using Payment.Protocol;
 using Payment.Protocol.Interface;
@@ -30,9 +31,9 @@ namespace Payment.API.DataServices.impl.Helpers
 
         public event Action<Frame>? FrameReceived;
 
-        public GtConnection(GtClientOptions opt, IFrameOperator frameOperator, ILogger<GtConnection> log)
+        public GtConnection(IOptions<GtClientOptions> opt, IFrameOperator frameOperator, ILogger<GtConnection> log)
         {
-            _opt = opt;
+            _opt = opt.Value;
             _frameOperator = frameOperator;
             _log = log;
         }
